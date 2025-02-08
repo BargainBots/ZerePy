@@ -23,6 +23,7 @@ class HyperbolicConnection(BaseConnection):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self._client = None
+        self._chat_history = []
 
     @property
     def is_llm_provider(self) -> bool:
@@ -54,6 +55,11 @@ class HyperbolicConnection(BaseConnection):
                     ActionParameter("temperature", False, float, "A decimal number that determines the degree of randomness in the response.")
                 ],
                 description="Generate text using Hyperbolic models"
+            ),
+            "clear-chat-history": Action(
+                name="clear-chat-history",
+                parameters=[],
+                description="Clear the conversation history"
             ),
             "check-model": Action(
                 name="check-model",
@@ -142,26 +148,46 @@ class HyperbolicConnection(BaseConnection):
             return False
 
     def generate_text(self, prompt: str, system_prompt: str, model: str = None, **kwargs) -> str:
-        """Generate text using Hyperbolic models"""
+        """Generate text using Hyperbolic models with chat history"""
         try:
             client = self._get_client()
             
-            # Use configured model if none provided
             if not model:
                 model = self.config["model"]
 
+            messages = [{"role": "system", "content": system_prompt}]
+            messages.extend(self._chat_history)
+            messages.append({"role": "user", "content": prompt})
+
             completion = client.chat.completions.create(
                 model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt},
-                ],
+                messages=messages,
             )
 
-            return completion.choices[0].message.content
+            assistant_message = completion.choices[0].message.content
+            
+            # Add the exchange to chat history
+            self._chat_history.append({"role": "user", "content": prompt})
+            self._chat_history.append({"role": "assistant", "content": assistant_message})
+
+            return assistant_message
             
         except Exception as e:
             raise HyperbolicAPIError(f"Text generation failed: {e}")
+
+    def clear_chat_history(self) -> None:
+        """Clear the conversation history"""
+        self._chat_history = []
+
+    def get_chat_history(self) -> list:
+        """Get the current conversation history"""
+        return self._chat_history
+
+    def add_message_to_history(self, role: str, content: str) -> None:
+        """Add a message to the conversation history"""
+        if role not in ["user", "assistant", "system"]:
+            raise ValueError("Role must be 'user', 'assistant', or 'system'")
+        self._chat_history.append({"role": role, "content": content})
 
     def check_model(self, model: str, **kwargs) -> bool:
         """Check if a specific model is available"""
