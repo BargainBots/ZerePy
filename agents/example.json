@@ -85,7 +85,7 @@
     },
     {
       "name": "hyperbolic",
-      "model": "meta-llama/Meta-Llama-3-70B-Instruct"
+      "model": "meta-llama/Llama-3.3-70B-Instruct"
     },
     {
       "name": "galadriel",
