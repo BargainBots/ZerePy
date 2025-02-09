@@ -28,5 +28,10 @@ EVM_NETWORKS = {
         "rpc_url": "https://polygon-rpc.com",
         "scanner_url": "api.polygonscan.com",
         "chain_id": 137
+    },
+    "sepolia": {
+        "rpc_url": "https://eth-sepolia.public.blastapi.io",
+        "scanner_url": "sepolia.etherscan.io",
+        "chain_id": 11155111
     }
 }

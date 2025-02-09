@@ -101,7 +101,7 @@
     },
     {
       "name": "ethereum",
-      "rpc": "https://eth.blockrazor.xyz"  
+      "rpc": "https://eth-sepolia.public.blastapi.io"  
     },
     {
       "name": "discord",

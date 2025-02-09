@@ -17,6 +17,18 @@ def extract_decision(response: str | dict, robot_number: int) -> str | None:
             return f"ROBOT{i}"
     return None
 
+def print_robot_qualities():
+    qualities = {
+        "ROBOT1": "Experienced leader, Strategic thinker, Excellent communicator",
+        "ROBOT2": "Innovative, Quick learner, Strong problem solver",
+        "ROBOT3": "Veteran, Reliable, Strong decision maker",
+        "ROBOT4": "Analytical, Detail-oriented, Strong planner"
+    }
+
+    print("\n🤖 Candidates' Qualities:")
+    for robot, quality in qualities.items():
+        print(f"{robot}: {quality}")
+
 def negotiate_governance():
     clients = [ZerePyClient("http://localhost:8000") for _ in range(4)]
     for i, client in enumerate(clients):
@@ -44,9 +56,18 @@ ROBOT4 QUALITIES: Analytical, Detail-oriented, Strong planner
 
 Let's negotiate who should lead the governance."""
 
+    print_robot_qualities()
+
     exchange_count = 0
     votes = {"ROBOT1": 0, "ROBOT2": 0, "ROBOT3": 0, "ROBOT4": 0}
     current_prompt = initial_prompt
+
+    robot_addresses = {
+        "ROBOT1": "0x5e2B6E0605A75a1FA11cf6a82286E1ABDb2e5D7d",
+        "ROBOT2": "0xa84b8512e1dAd22d022A47FeEfC8CC84658542d9",
+        "ROBOT3": "0xb337349cfa848A07dC3081380F4c87d2Cb597254",
+        "ROBOT4": "0x87be4870a2535922f6F01d5A55B75E60e9D6E92C"
+    }
 
     while True:
         for i, client in enumerate(clients):
@@ -74,7 +95,25 @@ Let's negotiate who should lead the governance."""
     print("\n🏁 Governance Negotiation Complete!")
     print(f"Votes received: {votes}")
     print(f"Number of exchanges: {exchange_count}")
-    
+
+    # Determine the leader
+    leader = max(votes, key=votes.get)
+    print(f"Chosen leader: {leader}")
+
+    # Reward the chosen leader
+    reward_amount = "0.001"
+    ethereum_client = ZerePyClient("http://localhost:8000")
+    tx_url = ethereum_client.perform_action(
+        connection="ethereum",
+        action="transfer",
+        params=[
+            robot_addresses[leader],
+            reward_amount
+        ]
+    )
+    print(f"Rewarded {leader} with {reward_amount} ETH")
+    print(f"Transaction URL: {tx_url}")
+
     return votes
 
 def monitor_topic():
